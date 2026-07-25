@@ -2,6 +2,7 @@ package entity;
 
 import java.awt.Graphics2D;
 import java.awt.Color;
+import java.awt.Rectangle;
 import java.io.IOException;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -26,6 +27,8 @@ public class Player extends Entity {
 
         screenX = gp.screenWidth / 2 - (gp.tileSize / 2);
         screenY = gp.screenHeight / 2 - (gp.tileSize / 2);
+
+        solidArea = new Rectangle(8, 16, 32, 32);
 
         setDefaultValues();
         getPlayerImage();
@@ -61,24 +64,30 @@ public class Player extends Entity {
             && keyH.rightPressed == false
             ) return;
 
-        if (keyH.upPressed == true) {
-            direction = "up";
-            worldY -= speed;
-        }
+        if (keyH.upPressed == true)         direction = "up";
+        else if (keyH.downPressed == true)  direction = "down";
+        else if (keyH.leftPressed == true)  direction = "left";
+        else if (keyH.rightPressed == true) direction = "right";
 
-        else if (keyH.downPressed == true) {
-            direction = "down";
-            worldY += speed;
-        }
+        collisionOn = false;
+        gp.cChecker.checkTile(this);
 
-        else if (keyH.leftPressed == true) {
-            direction = "left";
-            worldX -= speed;
-        }
-
-        else if (keyH.rightPressed == true) {
-            direction = "right";
-            worldX += speed;
+        // if collisionOn is false, can move; otherwise can not move!
+        if (collisionOn == false) {
+            switch (direction) {
+                case "up":
+                    worldY -= speed;
+                    break;
+                case "down":
+                    worldY += speed;
+                    break;
+                case "left":
+                    worldX -= speed;
+                    break;
+                case "right":
+                    worldX += speed;
+                    break;
+            }
         }
 
         // every frame call this update one time;
