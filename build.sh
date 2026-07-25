@@ -3,7 +3,7 @@
 
 # Method 1
 rm -rf out
-javac -d out src/**/*.java
+javac -encoding UTF-8 -d out src/**/*.java
 java -cp "out;res" main.Main
 
 # Method 2

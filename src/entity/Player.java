@@ -14,23 +14,26 @@ public class Player extends Entity {
     GamePanel gp;
     KeyHandler keyH;
 
-    //
-    // https://drive.google.com/drive/folders/1UThk24Kl7zb0w0bHPTdcuy2iZnqPFa4a
-    // Sprites: https://www.piskelapp.com/p/create/sprite/
-    // Rules: 16 * 16; transparent background; save as PNG;
-    //
+    // worldX: 在 地图 中的坐标
+    // screenX: 在 屏幕 中的坐标
+    // 这里的坐标都是给 drawImage 函数用的，指定 image 左上角的点在哪里
+    public final int screenX;
+    public final int screenY;
 
     public Player(GamePanel gp, KeyHandler keyH) {
         this.gp = gp;
         this.keyH = keyH;
+
+        screenX = gp.screenWidth / 2 - (gp.tileSize / 2);
+        screenY = gp.screenHeight / 2 - (gp.tileSize / 2);
 
         setDefaultValues();
         getPlayerImage();
     }
 
     public void setDefaultValues() {
-        x = 100;
-        y = 100;
+        worldX = gp.tileSize * 23;
+        worldY = gp.tileSize * 21;
         speed = 4;
         direction = "down";
     }
@@ -60,22 +63,22 @@ public class Player extends Entity {
 
         if (keyH.upPressed == true) {
             direction = "up";
-            y -= speed;
+            worldY -= speed;
         }
 
         else if (keyH.downPressed == true) {
             direction = "down";
-            y += speed;
+            worldY += speed;
         }
 
         else if (keyH.leftPressed == true) {
             direction = "left";
-            x -= speed;
+            worldX -= speed;
         }
 
         else if (keyH.rightPressed == true) {
             direction = "right";
-            x += speed;
+            worldX += speed;
         }
 
         // every frame call this update one time;
@@ -128,6 +131,6 @@ public class Player extends Entity {
                 }
                 break;
         }
-        g2.drawImage(image, x, y, gp.tileSize, gp.tileSize, null);
+        g2.drawImage(image, screenX, screenY, gp.tileSize, gp.tileSize, null);
     }
 }
