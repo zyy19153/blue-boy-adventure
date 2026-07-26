@@ -20,6 +20,7 @@ public class Player extends Entity {
     // 这里的坐标都是给 drawImage 函数用的，指定 image 左上角的点在哪里
     public final int screenX;
     public final int screenY;
+    int hasKey = 0;
 
     public Player(GamePanel gp, KeyHandler keyH) {
         this.gp = gp;
@@ -28,7 +29,14 @@ public class Player extends Entity {
         screenX = gp.screenWidth / 2 - (gp.tileSize / 2);
         screenY = gp.screenHeight / 2 - (gp.tileSize / 2);
 
-        solidArea = new Rectangle(8, 16, 32, 32);
+        // solidArea = new Rectangle(8, 16, 32, 32);
+        solidArea = new Rectangle();
+        solidArea.x = 8;
+        solidArea.y = 16;
+        solidAreaDefaultX = solidArea.x;
+        solidAreaDefaultY = solidArea.y;
+        solidArea.width = 32;
+        solidArea.height = 32;
 
         setDefaultValues();
         getPlayerImage();
@@ -69,8 +77,13 @@ public class Player extends Entity {
         else if (keyH.leftPressed == true)  direction = "left";
         else if (keyH.rightPressed == true) direction = "right";
 
+        // check tile collision
         collisionOn = false;
         gp.cChecker.checkTile(this);
+
+        // check object collision
+        int objIndex = gp.cChecker.checkObject(this, true);
+        pickUpObject(objIndex);
 
         // if collisionOn is false, can move; otherwise can not move!
         if (collisionOn == false) {
@@ -98,6 +111,25 @@ public class Player extends Entity {
             spriteCounter = 0;
         }
 
+    }
+
+    public void pickUpObject(int i) {
+        if (i != 999) /* player has touched an object */ {
+            String objectName = gp.obj[i].name;
+            switch (objectName) {
+                case "Key":
+                    hasKey++;
+                    gp.obj[i] = null;
+                    System.out.printf("Key: %s\n", hasKey);
+                    break;
+                case "Door":
+                    if (hasKey > 0) {
+                        gp.obj[i] = null;
+                        hasKey--;
+                    }
+                    break;
+            }
+        }
     }
 
     public void draw(Graphics2D g2) {
