@@ -8,35 +8,36 @@ public class KeyHandler implements KeyListener {
     public boolean upPressed, downPressed, leftPressed, rightPressed;
 
     // DEBUG
-    public boolean checkDrawTime = false;
+    public boolean debugOn = false;
 
     public void keyTyped(KeyEvent e) {}
 
     public void keyPressed(KeyEvent e) {
         int code = e.getKeyCode();
+        int modifiers = e.getModifiersEx();
 
-        if (code == KeyEvent.VK_W) {
+        if (code == KeyEvent.VK_UP) {
             upPressed = true;
         }
 
-        if (code == KeyEvent.VK_S) {
+        if (code == KeyEvent.VK_DOWN) {
             downPressed = true;
         }
 
-        if (code == KeyEvent.VK_A) {
+        if (code == KeyEvent.VK_LEFT) {
             leftPressed = true;
         }
 
-        if (code == KeyEvent.VK_D) {
+        if (code == KeyEvent.VK_RIGHT) {
             rightPressed = true;
         }
 
         // DEBUG
-        if (code == KeyEvent.VK_T) {
-            if (checkDrawTime == false) {
-                checkDrawTime = true;
-            } else if(checkDrawTime == true) {
-                checkDrawTime = false;
+        if (code == KeyEvent.VK_D && (modifiers & KeyEvent.CTRL_DOWN_MASK) != 0) {
+            if (debugOn == false) {
+                debugOn = true;
+            } else if(debugOn == true) {
+                debugOn = false;
             }
         }
 
@@ -45,19 +46,19 @@ public class KeyHandler implements KeyListener {
     public void keyReleased(KeyEvent e) {
         int code = e.getKeyCode();
 
-        if (code == KeyEvent.VK_W) {
+        if (code == KeyEvent.VK_UP) {
             upPressed = false;
         }
 
-        if (code == KeyEvent.VK_S) {
+        if (code == KeyEvent.VK_DOWN) {
             downPressed = false;
         }
 
-        if (code == KeyEvent.VK_A) {
+        if (code == KeyEvent.VK_LEFT) {
             leftPressed = false;
         }
 
-        if (code == KeyEvent.VK_D) {
+        if (code == KeyEvent.VK_RIGHT) {
             rightPressed = false;
         }
 

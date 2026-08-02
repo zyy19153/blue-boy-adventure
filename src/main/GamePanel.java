@@ -4,6 +4,12 @@ import java.awt.Dimension;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.swing.JPanel;
 
 import entity.Player;
@@ -124,7 +130,7 @@ public class GamePanel extends JPanel implements Runnable {
 
             // how many frames we draw within one second
             if (timer >= 1000000000) {
-                System.out.printf("FPS: %s\n", drawCount);
+                // System.out.printf("FPS: %s\n", drawCount);
                 drawCount = 0;
                 timer = 0;
             }
@@ -140,12 +146,6 @@ public class GamePanel extends JPanel implements Runnable {
         super.paintComponent(g);
 
         Graphics2D g2 = (Graphics2D) g;
-
-        // DEBUG
-        long drawStart = 0;
-        if (keyH.checkDrawTime == true) {
-            drawStart = System.nanoTime();
-        }
 
         // tile
         tileM.draw(g2);
@@ -163,12 +163,93 @@ public class GamePanel extends JPanel implements Runnable {
         // ui
         ui.draw(g2);
 
-        if (keyH.checkDrawTime == true) {
-            long drawEnd = System.nanoTime();
-            long passed = drawEnd - drawStart;
+        if (keyH.debugOn == true) {
             g2.setColor(Color.white);
-            g2.drawString("Draw Time: " + passed, 10, 400);
-            System.out.println("Draw Time:  " + passed);
+            g2.setFont(g2.getFont().deriveFont(30f));
+            int debugInfoIndexX = 10;
+            AtomicInteger debugInfoIndexY = new AtomicInteger(100);
+            int yDelta = g2.getFont().getSize();
+
+            // g2.drawString("Draw Time: " + passed, 10, 400);
+            int tileNumX = player.worldX/tileSize;
+            int tileNumY = player.worldY/tileSize;
+            g2.drawString(String.format("x: %s, y: %s", tileNumX, tileNumY), debugInfoIndexX, debugInfoIndexY.getAndAdd(yDelta));
+            g2.drawString(String.format("curTileName: %s", tileM.tile[tileM.mapTileNum[tileNumX][tileNumY]].name), debugInfoIndexX, debugInfoIndexY.getAndAdd(yDelta));
+            g2.drawString(String.format("P: l: %s, r %s, u: %s, b: %s",
+                                        (player.worldX+player.solidArea.x),
+                                        (player.worldX+player.solidArea.x+player.solidArea.width),
+                                        (player.worldY+player.solidArea.y),
+                                        (player.worldY+player.solidArea.y+player.solidArea.height)
+                         ), debugInfoIndexX, debugInfoIndexY.getAndAdd(yDelta));
+            g2.drawString(String.format("P: lc: %s, rc %s, ur: %s, br: %s",
+                                        (player.worldX+player.solidArea.x)/tileSize,
+                                        (player.worldX+player.solidArea.x+player.solidArea.width)/tileSize,
+                                        (player.worldY+player.solidArea.y)/tileSize,
+                                        (player.worldY+player.solidArea.y+player.solidArea.height)/tileSize
+                         ), debugInfoIndexX, debugInfoIndexY.getAndAdd(yDelta));
+
+            Player entity = player;
+            int entityLeftWorldX = entity.worldX + entity.solidArea.x;
+            int entityRightWorldX = entity.worldX + entity.solidArea.x + entity.solidArea.width;
+            int entityTopWorldY = entity.worldY + entity.solidArea.y;
+            int entityBottomWorldY = entity.worldY + entity.solidArea.y + entity.solidArea.height;
+
+            int entityLeftCol = entityLeftWorldX / tileSize;
+            int entityRightCol = entityRightWorldX / tileSize;
+            int entityTopRow = entityTopWorldY / tileSize;
+            int entityBottomRow = entityBottomWorldY / tileSize;
+
+            int tileNum1 = 0, tileNum2 = 0;
+
+            switch (entity.direction) {
+            case "up":
+                entityTopRow = (entityTopWorldY - entity.speed) / tileSize;
+                tileNum1 = tileM.mapTileNum[entityLeftCol][entityTopRow];
+                tileNum2 = tileM.mapTileNum[entityRightCol][entityTopRow];
+                if (tileM.tile[tileNum1].collision || tileM.tile[tileNum2].collision)
+                    entity.collisionOn = true;
+                break;
+            case "down":
+                entityBottomRow = (entityBottomWorldY + entity.speed) / tileSize;
+                tileNum1 = tileM.mapTileNum[entityLeftCol][entityBottomRow];
+                tileNum2 = tileM.mapTileNum[entityRightCol][entityBottomRow];
+                if (tileM.tile[tileNum1].collision || tileM.tile[tileNum2].collision)
+                    entity.collisionOn = true;
+                break;
+            case "left":
+                entityLeftCol = (entityLeftWorldX - entity.speed) / tileSize;
+                tileNum1 = tileM.mapTileNum[entityLeftCol][entityTopRow];
+                tileNum2 = tileM.mapTileNum[entityLeftCol][entityBottomRow];
+                if (tileM.tile[tileNum1].collision || tileM.tile[tileNum2].collision)
+                    entity.collisionOn = true;
+                break;
+            case "right":
+                entityRightCol = (entityRightWorldX + entity.speed) / tileSize;
+                tileNum1 = tileM.mapTileNum[entityRightCol][entityTopRow];
+                tileNum2 = tileM.mapTileNum[entityRightCol][entityBottomRow];
+                if (tileM.tile[tileNum1].collision || tileM.tile[tileNum2].collision)
+                    entity.collisionOn = true;
+                break;
+            }
+            g2.drawString(String.format("P: dir: %s, tile[1]: %s, tile[2]: %s",
+                                        entity.direction,
+                                        tileM.tile[tileNum1].name,
+                                        tileM.tile[tileNum2].name
+                         ), debugInfoIndexX, debugInfoIndexY.getAndAdd(yDelta));
+            g2.drawString(String.format("P: c: %s, tile[1].c: %s, tile[2].c: %s",
+                                        entity.collisionOn,
+                                        tileM.tile[tileNum1].collision,
+                                        tileM.tile[tileNum2].collision
+                         ), debugInfoIndexX, debugInfoIndexY.getAndAdd(yDelta));
+            Map<String/*objName*/, String/*indexInfo*/> objInfo = Stream.of(obj)
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.groupingBy(
+                            o -> o.name,
+                            Collectors.mapping(
+                                    o -> String.format("%s-%s;", o.worldX, o.worldY),
+                                    Collectors.joining(" "))));
+
+            objInfo.forEach((k, v) -> g2.drawString(String.format("%s: %s", k, v), debugInfoIndexX, debugInfoIndexY.getAndAdd(yDelta)));
         }
 
         g2.dispose();
