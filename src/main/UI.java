@@ -42,7 +42,6 @@ public class UI {
 
         if (gp.gameState == gp.playState) {
             // Do playState stuff
-            
         }
         if (gp.gameState == gp.pauseState) {
             // Do pauseState stuff
