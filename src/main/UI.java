@@ -164,6 +164,9 @@ public class UI {
 
         else if (titleScreenState == 1) {
 
+            g2.setColor(new Color(70, 120, 80));
+            g2.fillRect(0, 0, gp.screenWidth, gp.screenHeight);
+
             // class selection screen
             g2.setColor(Color.white);
             g2.setFont(g2.getFont().deriveFont(21F));

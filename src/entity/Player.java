@@ -1,11 +1,13 @@
 package entity;
 
 import java.awt.Graphics2D;
+import java.awt.Font;
 import java.awt.Color;
 import java.awt.Rectangle;
 import java.io.IOException;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
+import java.awt.AlphaComposite;
 
 import main.KeyHandler;
 import main.GamePanel;
@@ -65,6 +67,14 @@ public class Player extends Entity {
 
     public void update() {
 
+        if(invincible == true) {
+            invincibleCounter++;
+            if(invincibleCounter > 60) {
+                invincible = false;
+                invincibleCounter = 0;
+            }
+        }
+
         if (keyH.upPressed == false
             && keyH.downPressed == false
             && keyH.leftPressed == false
@@ -88,28 +98,24 @@ public class Player extends Entity {
         int npcIndex = gp.cChecker.checkEntity(this, gp.npc);
         interactNPC(npcIndex);
 
+        // check monster collision
+        int monsterIndex = gp.cChecker.checkEntity(this, gp.monster);
+        contactMonster(monsterIndex);
+
         // check event
         gp.eHandler.checkEvent();
 
-        gp.keyH.enterPressed = false;
-
         // if collisionOn is false, can move; otherwise can not move!
-        if (collisionOn == false) {
+        if (collisionOn == false && gp.keyH.enterPressed == false) {
             switch (direction) {
-                case "up":
-                    worldY -= speed;
-                    break;
-                case "down":
-                    worldY += speed;
-                    break;
-                case "left":
-                    worldX -= speed;
-                    break;
-                case "right":
-                    worldX += speed;
-                    break;
+                case "up"    : worldY -= speed; break;
+                case "down"  : worldY += speed; break;
+                case "left"  : worldX -= speed; break;
+                case "right" : worldX += speed; break;
             }
         }
+
+        gp.keyH.enterPressed = false;
 
         // every frame call this update one time;
         spriteCounter++;
@@ -135,7 +141,16 @@ public class Player extends Entity {
         }
     }
 
-    public void draw(Graphics2D g2, GamePanel gp) {
+    public void contactMonster(int i) {
+        if (i != 999) {
+            if (invincible == false) {
+                life -= 1;
+                invincible = true;
+            }
+        }
+    }
+
+    public void draw(Graphics2D g2) {
         // g2.setColor(Color.white);
         // g2.fillRect(x, y, gp.tileSize, gp.tileSize);
 
@@ -175,6 +190,20 @@ public class Player extends Entity {
                 }
                 break;
         }
+
+        if(invincible) {
+            // make player half transparent
+            g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.3F));
+        }
+
         g2.drawImage(image, screenX, screenY, null);
+
+        // reset alpha
+        g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1F));
+
+        // debug
+        // g2.setFont(new Font("Consolas", Font.PLAIN, 26));
+        // g2.setColor(Color.white);
+        // g2.drawString("Invincible:" + invincibleCounter, 10, 400);
     }
 }
