@@ -6,9 +6,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.text.DecimalFormat;
 
-import object.SuperObject;
 import object.OBJ_Key;
 import object.OBJ_Heart;
+import entity.Entity;
 
 public class UI {
     GamePanel gp;
@@ -35,10 +35,10 @@ public class UI {
         }
 
         // create heart object
-        SuperObject heart = new OBJ_Heart(gp);
+        Entity heart = new OBJ_Heart(gp);
         heart_full = heart.image;
-        heart_half = heart.image2;
-        heart_blank = heart.image3;
+        heart_half = heart.image1;
+        heart_blank = heart.image2;
     }
 
     public void showMessage(String text) {
